@@ -6,7 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+@Data
 public class RegisterRequest {
+
     @NotBlank(message = "Nome é obrigatório")
     private String nome;
 
@@ -14,10 +16,9 @@ public class RegisterRequest {
     @Email(message = "Email inválido")
     private String email;
 
-    @NotBlank(message = "Senha é obrigatório")
+    @NotBlank(message = "Senha é obrigatória")
     private String senha;
 
-    @NotBlank(message = "Role é obrigatório")
-    private String role;
-
+    @NotNull(message = "Role é obrigatória")
+    private RoleEnum role;
 }
