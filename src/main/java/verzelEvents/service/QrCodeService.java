@@ -15,9 +15,9 @@ public class QrCodeService {
     @Value("${app.qr.secret}")
     private String qrSecret;
 
-    public String generateHash(UUID ingressoId, UUID eventoId) {
+    public String generateHash(UUID reservaId, UUID eventoId) {
         try {
-            String payload = ingressoId + ":" + eventoId;
+            String payload = reservaId + ":" + eventoId;
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(qrSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             byte[] hash = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
