@@ -1,4 +1,83 @@
 package verzelEvents.service;
 
+import verzelEvents.dto.request.PagamentoRequest;
+import verzelEvents.dto.response.IngressoResponse;
+import verzelEvents.entity.*;
+import verzelEvents.exception.PagamentoRecusadoException;
+import verzelEvents.exception.ReservaExpiradaException;
+import verzelEvents.repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
 public class PagamentoService {
+
+    private final ReservaRepository reservaRepository;
+    private final AssentoRepository assentoRepository;
+    private final IngressoRepository ingressoRepository;
+    private final QrCodeService qrCodeService;
+
+    @Transactional
+    public IngressoResponse processPayment(UUID reservaId, PagamentoRequest request, String clienteEmail) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada"));
+
+        if (!reserva.getCliente().getEmail().equals(clienteEmail)) {
+            throw new IllegalArgumentException("Esta reserva não pertence a este cliente");
+        }
+
+        if (reserva.getStatus() != ReservaStatus.PENDENTE) {
+            throw new IllegalArgumentException("Reserva não está pendente de pagamento");
+        }
+
+        if (reserva.getExpiresAt().isBefore(LocalDateTime.now())) {
+            reserva.setStatus(ReservaStatus.EXPIRADA);
+            if (reserva.getAssento() != null) {
+                reserva.getAssento().setStatus(AssentoStatus.LIVRE);
+                assentoRepository.save(reserva.getAssento());
+            }
+            reservaRepository.save(reserva);
+            throw new ReservaExpiradaException("Esta reserva expirou, faça uma nova reserva");
+        }
+
+        if (request.getNumeroCartao().endsWith("0000")) {
+            throw new PagamentoRecusadoException("Pagamento recusado pela operadora do cartão");
+        }
+
+        reserva.setStatus(ReservaStatus.CONFIRMADA);
+        reservaRepository.save(reserva);
+
+        if (reserva.getAssento() != null) {
+            reserva.getAssento().setStatus(AssentoStatus.VENDIDO);
+            assentoRepository.save(reserva.getAssento());
+        }
+
+        String qrHash = qrCodeService.generateHash(reserva.getId(), reserva.getEvento().getId());
+
+        Ingresso ingresso = Ingresso.builder()
+                .reserva(reserva)
+                .status(IngressoStatus.EMITIDO)
+                .shareToken(UUID.randomUUID().toString())
+                .qrHash(qrHash)
+                .build();
+        ingressoRepository.save(ingresso);
+
+        return toResponse(ingresso);
+    }
+
+    private IngressoResponse toResponse(Ingresso ingresso) {
+        return new IngressoResponse(
+                ingresso.getId(),
+                ingresso.getStatus().name(),
+                ingresso.getQrHash(),
+                ingresso.getShareToken(),
+                ingresso.getReserva().getEvento().getTitulo(),
+                ingresso.getReserva().getAssento() != null ? ingresso.getReserva().getAssento().getCodigo() : null
+        );
+    }
 }

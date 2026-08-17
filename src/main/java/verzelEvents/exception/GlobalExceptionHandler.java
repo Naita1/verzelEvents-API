@@ -37,6 +37,16 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado no servidor");
     }
 
+    @ExceptionHandler(PagamentoRecusadoException.class)
+    public ResponseEntity<Map<String, Object>> handlePagamentoRecusado(PagamentoRecusadoException ex) {
+        return buildResponse(HttpStatus.PAYMENT_REQUIRED, ex.getMessage());
+    }
+
+    @ExceptionHandler(ReservaExpiradaException.class)
+    public ResponseEntity<Map<String, Object>> handleReservaExpirada(ReservaExpiradaException ex) {
+        return buildResponse(HttpStatus.GONE, ex.getMessage());
+    }
+    
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());

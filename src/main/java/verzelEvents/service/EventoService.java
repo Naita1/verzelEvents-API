@@ -39,7 +39,6 @@ public class EventoService {
 
         eventoRepository.save(evento);
 
-        // Gera automaticamente um assento pra cada vaga da capacidade
         for (int i = 1; i <= request.getCapacidade(); i++) {
             Assento assento = Assento.builder()
                     .evento(evento)
