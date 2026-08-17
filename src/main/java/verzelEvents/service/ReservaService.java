@@ -28,6 +28,14 @@ public class ReservaService {
 
     @Transactional
     public ReservaResponse createReserva(CreateReservaRequest request, String clienteEmail) {
+
+        if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
+            var reservaExistente = reservaRepository.findByIdempotencyKey(request.getIdempotencyKey());
+            if (reservaExistente.isPresent()) {
+                return toResponse(reservaExistente.get());
+            }
+        }
+
         Usuario cliente = usuarioRepository.findByEmail(clienteEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
 

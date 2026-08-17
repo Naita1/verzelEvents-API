@@ -1,8 +1,10 @@
 package verzelEvents.controller;
 
 import verzelEvents.dto.request.CreateEventRequest;
+import verzelEvents.dto.response.AssentoResponse;
 import verzelEvents.dto.response.CatalogItemResponse;
 import verzelEvents.dto.response.EventoResponse;
+import verzelEvents.service.AssentoService;
 import verzelEvents.service.EventoService;
 import verzelEvents.service.TmdbService;
 import jakarta.validation.Valid;
@@ -20,6 +22,7 @@ public class EventoController {
 
     private final EventoService eventoService;
     private final TmdbService tmdbService;
+    private final AssentoService assentoService;
 
     @GetMapping("/eventos")
     public ResponseEntity<List<EventoResponse>> listEvents() {
@@ -29,6 +32,11 @@ public class EventoController {
     @GetMapping("/eventos/{id}")
     public ResponseEntity<EventoResponse> getEventDetails(@PathVariable UUID id) {
         return ResponseEntity.ok(eventoService.getEventDetails(id));
+    }
+
+    @GetMapping("/eventos/{id}/assentos")
+    public ResponseEntity<List<AssentoResponse>> getAssentosByEvento(@PathVariable UUID id) {
+        return ResponseEntity.ok(assentoService.listByEvento(id));
     }
 
     @GetMapping("/organizador/eventos/catalogo")
