@@ -22,8 +22,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/error", "/eventos/**").permitAll()                        .requestMatchers("/organizador/**").hasRole("ORGANIZADOR")
-                        .requestMatchers("/cliente/**").hasRole("CLIENTE")
+                        .requestMatchers("/auth/**", "/error", "/eventos/**", "/tickets/share/**").permitAll()                        .requestMatchers("/cliente/**").hasRole("CLIENTE")
                         .requestMatchers("/portaria/**").hasRole("PORTARIA")
                         .anyRequest().authenticated()
                 )

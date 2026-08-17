@@ -14,4 +14,5 @@ public class IngressoResponse {
     private String shareToken;
     private String eventoTitulo;
     private String assentoCodigo;
+    private String codigoValidacao;
 }

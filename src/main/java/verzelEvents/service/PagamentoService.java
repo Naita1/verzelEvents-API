@@ -69,7 +69,6 @@ public class PagamentoService {
 
         return toResponse(ingresso);
     }
-
     private IngressoResponse toResponse(Ingresso ingresso) {
         return new IngressoResponse(
                 ingresso.getId(),
@@ -77,7 +76,8 @@ public class PagamentoService {
                 ingresso.getQrHash(),
                 ingresso.getShareToken(),
                 ingresso.getReserva().getEvento().getTitulo(),
-                ingresso.getReserva().getAssento() != null ? ingresso.getReserva().getAssento().getCodigo() : null
+                ingresso.getReserva().getAssento() != null ? ingresso.getReserva().getAssento().getCodigo() : null,
+                ingresso.getReserva().getId() + ":" + ingresso.getQrHash()
         );
     }
 }
