@@ -1,5 +1,6 @@
 package verzelEvents.service;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import verzelEvents.dto.request.CreateReservaRequest;
 import verzelEvents.dto.response.ReservaResponse;
 import verzelEvents.entity.*;
@@ -61,6 +62,7 @@ public class ReservaService {
         return toResponse(reserva);
     }
 
+    @Scheduled(fixedRate = 60000)
     @Transactional
     public void releaseExpiredReservations() {
         LocalDateTime now = LocalDateTime.now();
