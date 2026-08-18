@@ -64,6 +64,7 @@ public class AuthService {
                 .nome(request.getNome())
                 .email(request.getEmail())
                 .senha(passwordEncoder.encode(request.getSenha()))
+                .role(request.getRole())
                 .ativo(true)
                 .build();
 

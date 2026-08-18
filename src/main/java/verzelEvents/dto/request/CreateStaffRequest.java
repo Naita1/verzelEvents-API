@@ -18,5 +18,5 @@ public class CreateStaffRequest {
     private String senha;
 
     @NotNull(message = "Role é obrigatória")
-    private RoleEnum role; // aqui sim: PORTARIA ou ORGANIZADOR
+    private RoleEnum role; 
 }
