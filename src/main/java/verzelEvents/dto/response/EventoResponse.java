@@ -18,4 +18,5 @@ public class EventoResponse {
     private Integer capacidade;
     private BigDecimal preco;
     private String organizadorNome;
+    private String imagemUrl;
 }

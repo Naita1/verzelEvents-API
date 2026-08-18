@@ -28,4 +28,6 @@ public class CreateEventRequest {
     @NotNull
     @PositiveOrZero
     private BigDecimal preco;
+
+    private String imagemUrl;
 }

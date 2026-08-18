@@ -60,7 +60,7 @@ public class DataSeeder implements CommandLineRunner {
         Evento evento = eventoRepository.save(Evento.builder()
                 .organizador(organizador)
                 .titulo("Matrix Resurrections")
-                .tipo("Cinema")
+                .tipo("CINEMA")
                 .dataHora(LocalDateTime.now().plusDays(7))
                 .local("Sala 1 - Cine Verzel")
                 .capacidade(10)

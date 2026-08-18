@@ -39,4 +39,7 @@ public class Evento {
 
     @Column(nullable = false)
     private BigDecimal preco;
+
+    @Column(name = "imagem_url")
+    private String imagemUrl;
 }

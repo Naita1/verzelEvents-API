@@ -35,6 +35,7 @@ public class EventoService {
                 .local(request.getLocal())
                 .capacidade(request.getCapacidade())
                 .preco(request.getPreco())
+                .imagemUrl(request.getImagemUrl())
                 .build();
 
         eventoRepository.save(evento);
@@ -80,7 +81,8 @@ public class EventoService {
                 evento.getLocal(),
                 evento.getCapacidade(),
                 evento.getPreco(),
-                evento.getOrganizador().getNome()
+                evento.getOrganizador().getNome(),
+                evento.getImagemUrl()
         );
     }
 }

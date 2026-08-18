@@ -3,6 +3,7 @@ package verzelEvents.config;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,6 +28,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/auth/staff").hasRole("ORGANIZADOR")
                         .requestMatchers("/auth/**", "/error", "/eventos/**", "/tickets/share/**").permitAll()
                         .requestMatchers("/cliente/**").hasRole("CLIENTE")
                         .requestMatchers("/portaria/**").hasRole("PORTARIA")
