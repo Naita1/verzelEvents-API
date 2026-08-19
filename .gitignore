@@ -33,8 +33,6 @@ build/
 .vscode/
 
 ### Credenciais e config local ###
-application-local.properties
-application.properties
 .env
 
 ### OS ###
