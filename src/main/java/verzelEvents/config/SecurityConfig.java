@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/staff").hasRole("ORGANIZADOR")
                         .requestMatchers("/auth/**", "/error", "/eventos/**", "/tickets/share/**").permitAll()
+                        .requestMatchers("/organizador/**").hasRole("ORGANIZADOR") 
                         .requestMatchers("/cliente/**").hasRole("CLIENTE")
                         .requestMatchers("/portaria/**").hasRole("PORTARIA")
                         .anyRequest().authenticated()
