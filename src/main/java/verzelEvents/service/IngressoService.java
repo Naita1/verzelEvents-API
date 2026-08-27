@@ -1,6 +1,7 @@
 package verzelEvents.service;
 
 import verzelEvents.dto.response.IngressoResponse;
+import verzelEvents.exception.ResourceNotFoundException;
 import verzelEvents.entity.Ingresso;
 import verzelEvents.entity.Usuario;
 import verzelEvents.repository.IngressoRepository;
@@ -20,7 +21,7 @@ public class IngressoService {
 
     public List<IngressoResponse> getMyTickets(String clienteEmail) {
         Usuario cliente = usuarioRepository.findByEmail(clienteEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
 
         return ingressoRepository.findByReserva_Cliente_Id(cliente.getId()).stream()
                 .map(this::toResponse)
@@ -29,7 +30,7 @@ public class IngressoService {
 
     public IngressoResponse getSharedTicket(String shareToken) {
         Ingresso ingresso = ingressoRepository.findByShareToken(shareToken)
-                .orElseThrow(() -> new IllegalArgumentException("Ingresso não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ingresso não encontrado"));
         return toResponse(ingresso);
     }
 

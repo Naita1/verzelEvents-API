@@ -6,6 +6,9 @@ import verzelEvents.dto.request.RegisterRequest;
 import verzelEvents.dto.response.AuthResponse;
 import verzelEvents.entity.RoleEnum;
 import verzelEvents.entity.Usuario;
+import verzelEvents.exception.EmailAlreadyExistsException;
+import verzelEvents.exception.InvalidCredentialsException;
+import verzelEvents.exception.InvalidOperationException;
 import verzelEvents.repository.UsuarioRepository;
 import verzelEvents.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +25,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email já cadastrado");
+            throw new EmailAlreadyExistsException("Email já cadastrado");
         }
 
         Usuario usuario = Usuario.builder()
@@ -41,10 +44,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Email ou senha inválidos"));
+                .orElseThrow(() -> new InvalidCredentialsException("Email ou senha inválidos"));
 
         if (!passwordEncoder.matches(request.getSenha(), usuario.getSenha())) {
-            throw new IllegalArgumentException("Email ou senha inválidos");
+            throw new InvalidCredentialsException("Email ou senha inválidos");
         }
 
         String token = jwtService.generateToken(usuario);
@@ -53,11 +56,11 @@ public class AuthService {
 
     public AuthResponse criarStaff(CreateStaffRequest request) {
         if (request.getRole() == RoleEnum.CLIENTE) {
-            throw new IllegalArgumentException("Role inválida para criação de staff. Use /auth/register para cadastrar clientes.");
+            throw new InvalidOperationException("Role inválida para criação de staff. Use /auth/register para cadastrar clientes.");
         }
 
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email já cadastrado");
+            throw new EmailAlreadyExistsException("Email já cadastrado");
         }
 
         Usuario usuario = Usuario.builder()

@@ -15,6 +15,7 @@ public class TmdbService {
 
     private final RestClient tmdbRestClient;
 
+    @SuppressWarnings("deprecation")
     public List<CatalogItemResponse> searchMovies(String query) {
         JsonNode response = tmdbRestClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -29,12 +30,12 @@ public class TmdbService {
         if (response != null && response.has("results")) {
             for (JsonNode item : response.get("results")) {
                 resultados.add(new CatalogItemResponse(
-                        item.get("id").asText(),
-                        item.get("title").asText(),
-                        item.hasNonNull("poster_path")
-                                ? "https://image.tmdb.org/t/p/w500" + item.get("poster_path").asText()
+                        item.path("id").asText(""),
+                        item.path("title").asText(""),
+                        item.path("poster_path").hasNonNull("poster_path")
+                                ? "https://image.tmdb.org/t/p/w500" + item.path("poster_path").asText("")
                                 : null,
-                        item.hasNonNull("release_date") ? item.get("release_date").asText() : null
+                        item.hasNonNull("release_date") ? item.path("release_date").asString(null) : null
                 ));
             }
         }

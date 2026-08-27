@@ -3,6 +3,7 @@ package verzelEvents.service;
 import org.springframework.scheduling.annotation.Scheduled;
 import verzelEvents.dto.request.CreateReservaRequest;
 import verzelEvents.dto.response.ReservaResponse;
+import verzelEvents.exception.ResourceNotFoundException;
 import verzelEvents.entity.*;
 import verzelEvents.exception.SeatAlreadyReservedException;
 import verzelEvents.repository.*;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +38,13 @@ public class ReservaService {
         }
 
         Usuario cliente = usuarioRepository.findByEmail(clienteEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
 
         Evento evento = eventoRepository.findById(request.getEventoId())
-                .orElseThrow(() -> new IllegalArgumentException("Evento não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado: " + request.getEventoId()));
 
         Assento assento = assentoRepository.findById(request.getAssentoId())
-                .orElseThrow(() -> new IllegalArgumentException("Assento não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Assento não encontrado: " + request.getAssentoId()));
 
         if (assento.getStatus() != AssentoStatus.LIVRE) {
             throw new SeatAlreadyReservedException("Este assento já está reservado ou vendido");

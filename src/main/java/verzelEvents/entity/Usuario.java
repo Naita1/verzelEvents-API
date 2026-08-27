@@ -38,6 +38,7 @@ public class Usuario implements UserDetails {
     private RoleEnum role;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean ativo = true;
 
     @Override

@@ -3,6 +3,8 @@ package verzelEvents.config;
 import verzelEvents.entity.*;
 import verzelEvents.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
+
     private final UsuarioRepository usuarioRepository;
     private final EventoRepository eventoRepository;
     private final AssentoRepository assentoRepository;
@@ -22,6 +26,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (usuarioRepository.count() > 0) {
+            log.info("Banco de dados já populado. Seed não será executado.");
             return; 
         }
 
@@ -75,10 +80,10 @@ public class DataSeeder implements CommandLineRunner {
                     .build());
         }
 
-        System.out.println("=== Seed de dados criado com sucesso ===");
-        System.out.println("Organizador: organizador@verzel.com / 123456");
-        System.out.println("Cliente 1:   cliente1@verzel.com / 123456");
-        System.out.println("Cliente 2:   cliente2@verzel.com / 123456");
-        System.out.println("Portaria:    portaria@verzel.com / 123456");
+        log.info("=== Seed de dados criado com sucesso ===");
+        log.info("Organizador: organizador@verzel.com / 123456");
+        log.info("Cliente 1:   cliente1@verzel.com / 123456");
+        log.info("Cliente 2:   cliente2@verzel.com / 123456");
+        log.info("Portaria:    portaria@verzel.com / 123456");
     }
 }

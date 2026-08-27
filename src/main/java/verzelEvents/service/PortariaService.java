@@ -1,7 +1,9 @@
 package verzelEvents.service;
 
 import verzelEvents.dto.request.ValidarIngressoRequest;
+import verzelEvents.dto.response.ValidacaoHistoryResponse;
 import verzelEvents.dto.response.ValidacaoResponse;
+import verzelEvents.exception.ResourceNotFoundException;
 import verzelEvents.entity.*;
 import verzelEvents.repository.IngressoRepository;
 import verzelEvents.repository.UsuarioRepository;
@@ -28,7 +30,7 @@ public class PortariaService {
     @Transactional
     public ValidacaoResponse validateTicket(ValidarIngressoRequest request, String portariaEmail) {
         Usuario portaria = usuarioRepository.findByEmail(portariaEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário de portaria não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário de portaria não encontrado: " + portariaEmail));
 
         String[] partes = request.getCodigo().split(":");
         if (partes.length != 2) {
@@ -70,10 +72,13 @@ public class PortariaService {
         return logAndReturn(ingresso, portaria, ResultadoValidacao.VALIDO, "Ingresso válido, acesso liberado");
     }
 
-    public List<String> getValidationHistory(UUID eventoId) {
+    public List<ValidacaoHistoryResponse> getValidationHistory(UUID eventoId) {
         return validacaoRepository.findByIngresso_Reserva_Evento_IdOrderByCreatedAtDesc(eventoId).stream()
-                .map(v -> v.getCreatedAt() + " — " + v.getResultado() + " — portaria: " + v.getPortaria().getNome())
+                .map(this::toHistoryResponse)
                 .collect(Collectors.toList());
+    }
+    private ValidacaoHistoryResponse toHistoryResponse(Validacao validacao) {
+        return new ValidacaoHistoryResponse(validacao.getCreatedAt(), validacao.getResultado(), validacao.getPortaria().getNome());
     }
 
     private ValidacaoResponse logAndReturn(Ingresso ingresso, Usuario portaria, ResultadoValidacao resultado, String mensagem) {

@@ -2,8 +2,8 @@ package verzelEvents.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class SeatAlreadyReservedException extends BusinessException {
-    public SeatAlreadyReservedException(String message) {
+public class EmailAlreadyExistsException extends BusinessException {
+    public EmailAlreadyExistsException(String message) {
         super(message, HttpStatus.CONFLICT);
     }
 }

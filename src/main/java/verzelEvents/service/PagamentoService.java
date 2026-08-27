@@ -2,9 +2,13 @@ package verzelEvents.service;
 
 import verzelEvents.dto.request.PagamentoRequest;
 import verzelEvents.dto.response.IngressoResponse;
-import verzelEvents.entity.*;
+import verzelEvents.entity.AssentoStatus;
+import verzelEvents.entity.Ingresso;
+import verzelEvents.entity.IngressoStatus;
+import verzelEvents.entity.Reserva;
+import verzelEvents.entity.ReservaStatus;
 import verzelEvents.exception.PagamentoRecusadoException;
-import verzelEvents.exception.ReservaExpiradaException;
+import verzelEvents.exception.*;
 import verzelEvents.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,14 +29,14 @@ public class PagamentoService {
     @Transactional
     public IngressoResponse processPayment(UUID reservaId, PagamentoRequest request, String clienteEmail) {
         Reserva reserva = reservaRepository.findById(reservaId)
-                .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva não encontrada: " + reservaId));
 
         if (!reserva.getCliente().getEmail().equals(clienteEmail)) {
-            throw new IllegalArgumentException("Esta reserva não pertence a este cliente");
+            throw new ForbiddenOperationException("Esta reserva não pertence a este cliente");
         }
 
         if (reserva.getStatus() != ReservaStatus.PENDENTE) {
-            throw new IllegalArgumentException("Reserva não está pendente de pagamento");
+            throw new InvalidOperationException("Reserva não está pendente de pagamento, status atual: " + reserva.getStatus());
         }
 
         if (reserva.getExpiresAt().isBefore(LocalDateTime.now())) {

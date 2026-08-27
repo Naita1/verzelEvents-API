@@ -90,4 +90,74 @@ class PortariaServiceTest {
         assertEquals("JA_UTILIZADO", response.getResultado());
         verify(ingressoRepository, never()).save(ingresso);
     }
+
+    @Test
+    @DisplayName("Deve barrar ingresso com assinatura inválida (INVALIDO)")
+    void deveBarrarIngressoComAssinaturaInvalida() {
+        ValidarIngressoRequest request = new ValidarIngressoRequest();
+        request.setCodigo(reservaId + ":hashInvalido");
+        request.setEventoId(eventoId);
+
+        when(usuarioRepository.findByEmail("portaria@verzel.com")).thenReturn(Optional.of(portaria));
+        when(ingressoRepository.findByReservaId(reservaId)).thenReturn(Optional.of(ingresso));
+        when(qrCodeService.isValid(reservaId, eventoId, "hashInvalido")).thenReturn(false);
+
+        ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
+
+        assertEquals("INVALIDO", response.getResultado());
+        assertEquals(IngressoStatus.EMITIDO, ingresso.getStatus()); 
+        verify(validacaoRepository, times(1)).save(any(Validacao.class));
+    }
+
+    @Test
+    @DisplayName("Deve barrar ingresso do evento errado (EVENTO_ERRADO)")
+    void deveBarrarIngressoDeOutroEvento() {
+        UUID outroEventoId = UUID.randomUUID();
+        ValidarIngressoRequest request = new ValidarIngressoRequest();
+        request.setCodigo(reservaId + ":hashValido123");
+        request.setEventoId(outroEventoId); 
+
+        when(usuarioRepository.findByEmail("portaria@verzel.com")).thenReturn(Optional.of(portaria));
+        when(ingressoRepository.findByReservaId(reservaId)).thenReturn(Optional.of(ingresso));
+        when(qrCodeService.isValid(reservaId, eventoId, "hashValido123")).thenReturn(true);
+
+        ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
+
+        assertEquals("EVENTO_ERRADO", response.getResultado());
+        assertEquals(IngressoStatus.EMITIDO, ingresso.getStatus());
+        verify(validacaoRepository, times(1)).save(any(Validacao.class));
+    }
+
+    @Test
+    @DisplayName("Deve registrar tentativa de fraude com código inválido (INVALIDO)")
+    void deveRegistrarTentativaComCodigoInvalido() {
+        ValidarIngressoRequest request = new ValidarIngressoRequest();
+        request.setCodigo("formato-invalido");
+        request.setEventoId(eventoId);
+
+        when(usuarioRepository.findByEmail("portaria@verzel.com")).thenReturn(Optional.of(portaria));
+
+        ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
+
+        assertEquals("INVALIDO", response.getResultado());
+        verify(ingressoRepository, never()).findByReservaId(any());
+        verify(validacaoRepository, times(1)).save(any(Validacao.class));
+    }
+
+    @Test
+    @DisplayName("Deve registrar tentativa com ingresso inexistente (INVALIDO)")
+    void deveRegistrarTentativaComIngressoInexistente() {
+        UUID reservaInexistenteId = UUID.randomUUID();
+        ValidarIngressoRequest request = new ValidarIngressoRequest();
+        request.setCodigo(reservaInexistenteId + ":hashQualquer");
+        request.setEventoId(eventoId);
+
+        when(usuarioRepository.findByEmail("portaria@verzel.com")).thenReturn(Optional.of(portaria));
+        when(ingressoRepository.findByReservaId(reservaInexistenteId)).thenReturn(Optional.empty());
+
+        ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
+
+        assertEquals("INVALIDO", response.getResultado());
+        verify(validacaoRepository, times(1)).save(any(Validacao.class));
+    }
 }

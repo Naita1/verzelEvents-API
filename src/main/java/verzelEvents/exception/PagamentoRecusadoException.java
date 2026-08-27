@@ -1,7 +1,9 @@
 package verzelEvents.exception;
 
-public class PagamentoRecusadoException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class PagamentoRecusadoException extends BusinessException {
     public PagamentoRecusadoException(String message) {
-        super(message);
+        super(message, HttpStatus.PAYMENT_REQUIRED);
     }
 }

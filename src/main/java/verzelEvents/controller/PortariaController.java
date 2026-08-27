@@ -1,6 +1,7 @@
 package verzelEvents.controller;
 
 import verzelEvents.dto.request.ValidarIngressoRequest;
+import verzelEvents.dto.response.ValidacaoHistoryResponse;
 import verzelEvents.dto.response.ValidacaoResponse;
 import verzelEvents.service.PortariaService;
 import jakarta.validation.Valid;
@@ -28,7 +29,7 @@ public class PortariaController {
     }
 
     @GetMapping("/eventos/{eventoId}/historico")
-    public ResponseEntity<List<String>> getValidationHistory(@PathVariable UUID eventoId) {
+    public ResponseEntity<List<ValidacaoHistoryResponse>> getValidationHistory(@PathVariable UUID eventoId) {
         return ResponseEntity.ok(portariaService.getValidationHistory(eventoId));
     }
 }

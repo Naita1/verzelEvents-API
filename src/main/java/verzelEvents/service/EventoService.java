@@ -2,6 +2,7 @@ package verzelEvents.service;
 
 import verzelEvents.dto.request.CreateEventRequest;
 import verzelEvents.dto.response.EventoResponse;
+import verzelEvents.exception.ResourceNotFoundException;
 import verzelEvents.entity.*;
 import verzelEvents.repository.AssentoRepository;
 import verzelEvents.repository.EventoRepository;
@@ -25,7 +26,7 @@ public class EventoService {
     @Transactional
     public EventoResponse createEvent(CreateEventRequest request, String organizadorEmail) {
         Usuario organizador = usuarioRepository.findByEmail(organizadorEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Organizador não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizador não encontrado"));
 
         Evento evento = Evento.builder()
                 .organizador(organizador)
@@ -60,13 +61,13 @@ public class EventoService {
 
     public EventoResponse getEventDetails(UUID id) {
         Evento evento = eventoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Evento não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Evento não encontrado: " + id));
         return toResponse(evento);
     }
 
     public List<EventoResponse> listMyEvents(String organizadorEmail) {
         Usuario organizador = usuarioRepository.findByEmail(organizadorEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Organizador não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizador não encontrado"));
         return eventoRepository.findByOrganizadorId(organizador.getId()).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

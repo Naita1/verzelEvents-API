@@ -1,7 +1,9 @@
 package verzelEvents.exception;
 
-public class ReservaExpiradaException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class ReservaExpiradaException extends BusinessException {
     public ReservaExpiradaException(String message) {
-        super(message);
+        super(message, HttpStatus.GONE);
     }
 }
