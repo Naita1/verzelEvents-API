@@ -7,7 +7,6 @@ import verzelEvents.entity.Ingresso;
 import verzelEvents.entity.IngressoStatus;
 import verzelEvents.entity.Reserva;
 import verzelEvents.entity.ReservaStatus;
-import verzelEvents.exception.PagamentoRecusadoException;
 import verzelEvents.exception.*;
 import verzelEvents.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -71,17 +70,6 @@ public class PagamentoService {
                 .build();
         ingressoRepository.save(ingresso);
 
-        return toResponse(ingresso);
-    }
-    private IngressoResponse toResponse(Ingresso ingresso) {
-        return new IngressoResponse(
-                ingresso.getId(),
-                ingresso.getStatus().name(),
-                ingresso.getQrHash(),
-                ingresso.getShareToken(),
-                ingresso.getReserva().getEvento().getTitulo(),
-                ingresso.getReserva().getAssento() != null ? ingresso.getReserva().getAssento().getCodigo() : null,
-                ingresso.getReserva().getId() + ":" + ingresso.getQrHash()
-        );
+        return IngressoResponse.fromEntity(ingresso);
     }
 }
