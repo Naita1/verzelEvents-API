@@ -1,6 +1,6 @@
 package verzelEvents.service;
 
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode; 
 import verzelEvents.dto.response.CatalogItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,8 +14,6 @@ import java.util.List;
 public class TmdbService {
 
     private final RestClient tmdbRestClient;
-
-    @SuppressWarnings("deprecation")
     public List<CatalogItemResponse> searchMovies(String query) {
         JsonNode response = tmdbRestClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -35,7 +33,7 @@ public class TmdbService {
                         item.path("poster_path").hasNonNull("poster_path")
                                 ? "https://image.tmdb.org/t/p/w500" + item.path("poster_path").asText("")
                                 : null,
-                        item.hasNonNull("release_date") ? item.path("release_date").asString(null) : null
+                        item.hasNonNull("release_date") ? item.path("release_date").asText(null) : null
                 ));
             }
         }

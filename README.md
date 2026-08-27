@@ -1,6 +1,6 @@
 # Verzel Events — Plataforma de Eventos e Ingressos
 
-Desafio técnico Elite Dev (Verzel). Plataforma onde um organizador publica eventos a partir de um catálogo externo, e clientes reservam, pagam (simulado) e recebem ingressos com QR code assinado, validados na portaria na entrada do evento.
+Desafio técnico Elite Dev. Plataforma onde um organizador publica eventos a partir de um catálogo externo, e clientes reservam, pagam (simulado) e recebem ingressos com QR code assinado, validados na portaria na entrada do evento.
 
 > **Status do projeto**: aplicação completa e funcional — back-end (autenticação, catálogo, eventos, reservas com trava de concorrência, pagamento simulado, ingressos com QR, validação na portaria) e front-end (login, home, detalhe do evento com mapa de assentos, pagamento, meus ingressos, painel do organizador e tela de portaria), todos testados manualmente ponta a ponta.
 
@@ -66,18 +66,13 @@ openssl rand -base64 32
 ```
 
 A API sobe em `http://localhost:8080`. Na primeira execução, o `DataSeeder` popula o banco automaticamente com os dados de teste (veja abaixo).
+A documentação interativa da API estará disponível em: **http://localhost:8080/swagger-ui.html**
 
 ### 4. Rodar o front-end
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
+O front-end está em um repositório separado. As instruções acima são apenas para o back-end.
 A aplicação sobe em `http://localhost:5173` e já consome a API em `http://localhost:8080`.
 
----
 
 ## Dados de teste (seed)
 
@@ -92,53 +87,15 @@ Criados automaticamente na primeira inicialização com o banco vazio:
 
 Também é criado um evento publicado ("Matrix Resurrections", Cinema, Sala 1 - Cine Verzel, R$ 35,00, 10 assentos A1-A10 livres) para permitir testar o fluxo completo sem precisar montar dados manualmente.
 
----
 
-## Principais endpoints da API
+## Documentação da API (Swagger)
 
-### Autenticação
-- `POST /auth/register` — cadastro público (nome, email, senha) — sempre criado com role CLIENTE
-- `POST /auth/login` — login, retorna JWT
-- `POST /auth/staff` — criação de usuários ORGANIZADOR ou PORTARIA (não permite role CLIENTE, que deve usar `/auth/register`)
+Após iniciar a aplicação, acesse a documentação interativa e completa da API no Swagger UI:
 
-### Eventos (públicos para leitura)
-- `GET /eventos` — lista eventos publicados
-- `GET /eventos/{id}` — detalhes de um evento
-- `GET /eventos/{id}/assentos` — lista os assentos de um evento e seus status (LIVRE, RESERVADO, VENDIDO)
+**http://localhost:8080/swagger-ui.html**
 
-### Organizador (requer role ORGANIZADOR)
-- `GET /organizador/eventos/catalogo?query=` — busca filmes no TMDb
-- `POST /organizador/eventos` — cria evento a partir do catálogo (título, tipo, data/hora, local, capacidade, preço e URL do pôster do filme selecionado)
-- `GET /organizador/eventos` — lista eventos do organizador logado
+Lá você poderá ver todos os endpoints, seus parâmetros, corpos de requisição/resposta e testá-los diretamente. Para usar os endpoints protegidos, clique no botão "Authorize" e insira seu token JWT no formato `Bearer <seu_token>`.
 
-### Cliente (requer role CLIENTE)
-- `POST /cliente/reservas` — reserva um assento (aceita uma chave de idempotência opcional para evitar reservas duplicadas em reenvios)
-- `POST /cliente/reservas/{id}/pagamento` — processa pagamento simulado e emite o ingresso
-- `GET /cliente/ingressos` — lista os ingressos do cliente logado
-
-### Público (link compartilhado)
-- `GET /tickets/share/{token}` — visualiza um ingresso compartilhado, sem necessidade de login
-
-### Portaria (requer role PORTARIA)
-- `POST /portaria/validar` — valida um ingresso (código no formato `reservaId:qrHash`), retorna `VALIDO`, `INVALIDO`, `JA_UTILIZADO` ou `EVENTO_ERRADO`
-- `GET /portaria/eventos/{eventoId}/historico` — histórico de validações de um evento (data, resultado e portaria responsável)
-
----
-
-## Front-end
-
-O front-end foi construído em React + Vite, consumindo diretamente a API acima:
-
-- **Autenticação**: `AuthContext` guarda o usuário logado e o token JWT; rotas protegidas por role (`ProtectedRoute`) redirecionam conforme o papel do usuário.
-- **Home**: lista os eventos publicados, com busca por texto e filtro por tipo.
-- **Detalhe do evento**: mostra o mapa de assentos e permite seleção múltipla; a reserva de cada assento selecionado é enviada em paralelo, tratando falhas parciais (ex.: assento que acabou de ser reservado por outro cliente).
-- **Pagamento**: formulário simulado de cartão (um cartão terminado em `0000` simula recusa da operadora); ao concluir, o ingresso é emitido com QR code e link de compartilhamento.
-- **Meus Ingressos**: lista os ingressos do cliente, com visual de e-ticket.
-- **Portaria**: valida ingressos por código e mostra o histórico de validações do evento.
-- **Painel do Organizador**: busca no catálogo do TMDb, criação de eventos e listagem dos eventos já publicados.
-- **Design**: tema escuro ("Cinema Dark Premium"), com acento laranja, glassmorphism, mapa de assentos estilo sala de cinema e cards de ingresso no estilo e-ticket; transições de página com Framer Motion.
-
----
 
 ## Decisões técnicas e trade-offs
 
@@ -158,7 +115,7 @@ O conteúdo do QR (`reservaId:hash`) é assinado com uma chave secreta do servid
 
 **Chave JWT e chave do QR versionadas fora do código**
 Ambas ficam em `application.properties`, que está no `.gitignore`. Um `application-example.properties` com placeholders é versionado, com instruções de como gerar as chaves reais. Isso evita expor segredos no repositório público, mas exige uma etapa extra de configuração antes de rodar (documentada acima).
-
+ 
 **TTL de reserva com liberação automática**
 Reservas pendentes de pagamento expiram após 5 minutos. Um job agendado (`@Scheduled`, a cada 60 segundos) libera automaticamente o assento de reservas expiradas, evitando que assentos fiquem "presos" indefinidamente por clientes que abandonam o checkout.
 
@@ -171,13 +128,7 @@ Cada chamada a `/portaria/validar` grava um registro em `validacoes`, mesmo quan
 **API externa escolhida: TMDb**
 Optei por TMDb em vez de Ticketmaster Discovery por ter uma integração mais simples (sem necessidade de lidar com preços/localização vindos da API, já que esses dados são definidos pelo organizador na criação do evento).
 
----
 
-## Uso de IA no desenvolvimento
-
-Usei IA para auxiliar na construção do projeto — principalmente na configuração do Docker Compose e em partes específicas onde eu tinha menos domínio prévio — e não para gerar o projeto como um todo. As decisões de arquitetura, modelagem e as escolhas documentadas na seção acima foram minhas.
-
----
 
 ## Limitações conhecidas
 
