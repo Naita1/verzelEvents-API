@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,17 +33,20 @@ class ReservaServiceTest {
     @Test
     @DisplayName("Deve expirar reservas vencidas e liberar o assento")
     void deveExpirarReservasVencidas() {
-        Assento assento = Assento.builder().status(AssentoStatus.RESERVADO).build();
+        Assento assento = Assento.builder()
+                .status(AssentoStatus.RESERVADO)
+                .build();
+
         Reserva reserva = Reserva.builder()
                 .status(ReservaStatus.PENDENTE)
                 .expiresAt(LocalDateTime.now().minusMinutes(1))
                 .assento(assento)
                 .build();
 
-        when(reservaRepository.findAll()).thenReturn(List.of(reserva));
+        when(reservaRepository.findAllByStatusAndExpiresAtBefore(eq(ReservaStatus.PENDENTE), any(LocalDateTime.class)))
+                .thenReturn(List.of(reserva));
 
         reservaService.releaseExpiredReservations();
-
         assertEquals(ReservaStatus.EXPIRADA, reserva.getStatus());
         assertEquals(AssentoStatus.LIVRE, assento.getStatus());
         verify(reservaRepository, times(1)).save(reserva);

@@ -2,13 +2,15 @@ package verzelEvents.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
 @Table(name = "assentos", indexes = {
         @Index(name = "idx_assento_evento_id", columnList = "evento_id")
 })
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,7 +20,7 @@ public class Assento {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "evento_id", nullable = false)
     private Evento evento;
 
@@ -31,4 +33,17 @@ public class Assento {
 
     @Version
     private Long version;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Assento assento = (Assento) o;
+        return id != null && Objects.equals(id, assento.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
