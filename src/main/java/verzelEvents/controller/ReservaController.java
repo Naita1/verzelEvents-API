@@ -12,7 +12,9 @@ import verzelEvents.dto.response.ReservaResponse;
 import verzelEvents.service.ReservaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +32,7 @@ public class ReservaController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Reserva criada com sucesso",
+            @ApiResponse(responseCode = "201", description = "Reserva criada com sucesso",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ReservaResponse.class))),
             @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos", content = @Content),
@@ -40,10 +42,11 @@ public class ReservaController {
             @ApiResponse(responseCode = "409", description = "Conflito. O assento selecionado já está ocupado ou reservado.", content = @Content)
     })
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<ReservaResponse> createReserva(
             @Valid @RequestBody CreateReservaRequest request,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(reservaService.createReserva(request, authentication.getName()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(reservaService.createReserva(request, authentication.getName()));
     }
 }

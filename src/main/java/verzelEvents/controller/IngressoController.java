@@ -12,6 +12,7 @@ import verzelEvents.dto.response.IngressoResponse;
 import verzelEvents.service.IngressoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,7 @@ public class IngressoController {
             @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas clientes podem acessar seus ingressos.", content = @Content)
     })
     @GetMapping("/cliente/ingressos")
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<List<IngressoResponse>> getMyTickets(Authentication authentication) {
         return ResponseEntity.ok(ingressoService.getMyTickets(authentication.getName()));
     }

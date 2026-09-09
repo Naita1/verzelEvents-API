@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,14 +32,13 @@ public class AuthController {
             description = "Cria um novo usuário com o papel de 'CLIENTE'. O e-mail deve ser único."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Cliente registrado com sucesso", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class)) }),
+            @ApiResponse(responseCode = "201", description = "Cliente registrado com sucesso", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class)) }),
             @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos (ex: e-mail inválido, senha curta)", content = @Content),
             @ApiResponse(responseCode = "409", description = "E-mail já cadastrado no sistema", content = @Content)
     })
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @Operation(
@@ -52,13 +52,12 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @Operation(
-            summary = "Criar um novo usuário Staff (Portaria)",
-            description = "Cria um novo usuário com o papel de 'PORTARIA'. Este endpoint é protegido e requer autenticação de um usuário 'ORGANIZADOR'.",
+            summary = "Criar um novo usuário Staff (Portaria ou Organizador)",
+            description = "Cria um novo usuário com o papel de 'PORTARIA' ou 'ORGANIZADOR'. Este endpoint é protegido e requer autenticação de um usuário 'ORGANIZADOR'.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
@@ -69,8 +68,8 @@ public class AuthController {
             @ApiResponse(responseCode = "409", description = "E-mail já cadastrado no sistema", content = @Content)
     })
     @PostMapping("/staff")
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<AuthResponse> criarStaff(@Valid @RequestBody CreateStaffRequest request) {
-        AuthResponse response = authService.criarStaff(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.criarStaff(request));
     }
 }

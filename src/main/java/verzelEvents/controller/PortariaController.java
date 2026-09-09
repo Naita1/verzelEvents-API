@@ -15,6 +15,7 @@ import verzelEvents.service.PortariaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +44,7 @@ public class PortariaController {
             @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas usuários da portaria podem validar ingressos.", content = @Content)
     })
     @PostMapping("/validar")
+    @PreAuthorize("hasRole('PORTARIA')")
     public ResponseEntity<ValidacaoResponse> validateTicket(
             @Valid @RequestBody ValidarIngressoRequest request,
             Authentication authentication
@@ -64,6 +66,7 @@ public class PortariaController {
             @ApiResponse(responseCode = "404", description = "Evento não encontrado.", content = @Content)
     })
     @GetMapping("/eventos/{eventoId}/historico")
+    @PreAuthorize("hasRole('PORTARIA')")
     public ResponseEntity<List<ValidacaoHistoryResponse>> getValidationHistory(@PathVariable UUID eventoId) {
         return ResponseEntity.ok(portariaService.getValidationHistory(eventoId));
     }

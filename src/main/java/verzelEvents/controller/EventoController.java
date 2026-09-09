@@ -17,7 +17,9 @@ import verzelEvents.service.EventoService;
 import verzelEvents.service.TmdbService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,6 +92,7 @@ public class EventoController {
             @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas organizadores podem acessar este recurso.", content = @Content)
     })
     @GetMapping("/organizador/eventos/catalogo")
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<List<CatalogItemResponse>> searchCatalog(@RequestParam String query) {
         return ResponseEntity.ok(tmdbService.searchMovies(query));
     }
@@ -100,7 +103,7 @@ public class EventoController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Evento criado com sucesso",
+            @ApiResponse(responseCode = "201", description = "Evento criado com sucesso",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = EventoResponse.class))),
             @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos", content = @Content),
@@ -108,11 +111,12 @@ public class EventoController {
             @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas organizadores podem criar eventos.", content = @Content)
     })
     @PostMapping("/organizador/eventos")
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<EventoResponse> createEvent(
             @Valid @RequestBody CreateEventRequest request,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(eventoService.createEvent(request, authentication.getName()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventoService.createEvent(request, authentication.getName()));
     }
 
     @Operation(
@@ -128,6 +132,7 @@ public class EventoController {
             @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas organizadores podem listar seus eventos.", content = @Content)
     })
     @GetMapping("/organizador/eventos")
+    @PreAuthorize("hasRole('ORGANIZADOR')")
     public ResponseEntity<List<EventoResponse>> listMyEvents(Authentication authentication) {
         return ResponseEntity.ok(eventoService.listMyEvents(authentication.getName()));
     }

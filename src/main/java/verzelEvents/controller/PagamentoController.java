@@ -13,6 +13,7 @@ import verzelEvents.service.PagamentoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +43,7 @@ public class PagamentoController {
             @ApiResponse(responseCode = "409", description = "Conflito. A reserva já foi paga ou o assento não está mais disponível.", content = @Content)
     })
     @PostMapping("/{id}/pagamento")
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<IngressoResponse> processPayment(
             @PathVariable UUID id,
             @Valid @RequestBody PagamentoRequest request,
