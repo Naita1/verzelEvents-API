@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import verzelEvents.dto.request.CreateStaffRequest;
 import verzelEvents.dto.request.LoginRequest;
-import verzelEvents.dto.request.RegisterRequest;
+import verzelEvents.dto.request.RegisterRequestTest;
 import verzelEvents.dto.response.AuthResponse;
 import verzelEvents.entity.RoleEnum;
 import verzelEvents.service.AuthService;
@@ -38,10 +38,10 @@ class AuthControllerTest {
     @Test
     @DisplayName("Deve registrar cliente com sucesso e retornar status HTTP 201 Created")
     void deveRegistrarClienteComSucesso() throws Exception {
-        RegisterRequest request = new RegisterRequest("Cliente Teste", "cliente@verzel.com", "senha123");
+        RegisterRequestTest request = new RegisterRequestTest("Cliente Teste", "cliente@verzel.com", "senha123");
         AuthResponse response = new AuthResponse("token_jwt_valido", "Cliente Teste", "cliente@verzel.com", RoleEnum.CLIENTE);
 
-        when(authService.register(any(RegisterRequest.class))).thenReturn(response);
+        when(authService.register(any(RegisterRequestTest.class))).thenReturn(response);
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import verzelEvents.dto.request.CreateStaffRequest;
 import verzelEvents.dto.request.LoginRequest;
-import verzelEvents.dto.request.RegisterRequest;
+import verzelEvents.dto.request.RegisterRequestTest;
 import verzelEvents.dto.response.AuthResponse;
 import verzelEvents.service.AuthService;
 import jakarta.validation.Valid;
@@ -37,7 +37,7 @@ public class AuthController {
             @ApiResponse(responseCode = "409", description = "E-mail já cadastrado no sistema", content = @Content)
     })
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequestTest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 

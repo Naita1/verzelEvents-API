@@ -2,7 +2,7 @@ package verzelEvents.service;
 
 import verzelEvents.dto.request.CreateStaffRequest;
 import verzelEvents.dto.request.LoginRequest;
-import verzelEvents.dto.request.RegisterRequest;
+import verzelEvents.dto.request.RegisterRequestTest;
 import verzelEvents.dto.response.AuthResponse;
 import verzelEvents.entity.RoleEnum;
 import verzelEvents.entity.Usuario;
@@ -23,7 +23,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequestTest request) {
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email já cadastrado");
         }
