@@ -1,3 +1,4 @@
+package verzelEvents.entity;
 
 /**
  * Representa os papéis (roles) de acesso e permissões dos usuários no sistema.
