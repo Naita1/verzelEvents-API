@@ -3,13 +3,15 @@ package verzelEvents.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
 @Table(name = "validacoes", indexes = {
         @Index(name = "idx_validacao_ingresso_id", columnList = "ingresso_id")
 })
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,9 +30,22 @@ public class Validacao {
     private Usuario portaria;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private ResultadoValidacao resultado;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Validacao validacao = (Validacao) o;
+        return id != null && Objects.equals(id, validacao.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

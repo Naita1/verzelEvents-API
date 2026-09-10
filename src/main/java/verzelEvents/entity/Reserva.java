@@ -3,6 +3,7 @@ package verzelEvents.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -10,7 +11,8 @@ import java.util.UUID;
         @Index(name = "idx_reserva_idempotency_key", columnList = "idempotencyKey", unique = true),
         @Index(name = "idx_reserva_status_expires_at", columnList = "status, expiresAt")
 })
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -33,12 +35,25 @@ public class Reserva {
     private Assento assento;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private ReservaStatus status;
 
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
-    @Column(name = "idempotency_key")
+    @Column(name = "idempotency_key", length = 100)
     private String idempotencyKey;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Reserva reserva = (Reserva) o;
+        return id != null && Objects.equals(id, reserva.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

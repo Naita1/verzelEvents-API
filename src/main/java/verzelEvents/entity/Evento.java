@@ -4,13 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
 @Table(name = "eventos", indexes = {
         @Index(name = "idx_evento_organizador_id", columnList = "organizador_id")
 })
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,10 +26,10 @@ public class Evento {
     @JoinColumn(name = "organizador_id", nullable = false)
     private Usuario organizador;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 150)
     private String titulo;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String tipo;
 
     @Column(name = "data_hora", nullable = false)
@@ -44,4 +46,17 @@ public class Evento {
 
     @Column(name = "imagem_url")
     private String imagemUrl;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Evento evento = (Evento) o;
+        return id != null && Objects.equals(id, evento.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

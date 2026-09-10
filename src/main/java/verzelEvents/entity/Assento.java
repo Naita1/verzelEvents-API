@@ -24,11 +24,11 @@ public class Assento {
     @JoinColumn(name = "evento_id", nullable = false)
     private Evento evento;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 10)
     private String codigo;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private AssentoStatus status;
 
     @Version
