@@ -58,8 +58,10 @@ class AuthControllerTest {
     @Test
     @DisplayName("Deve realizar login com sucesso e retornar status HTTP 200 OK")
     void deveRealizarLoginComSucesso() throws Exception {
-        LoginRequest request = new LoginRequest("cliente@verzel.com", "senha123");
-        AuthResponse response = new AuthResponse("token_jwt_valido", "Cliente Teste", "cliente@verzel.com", RoleEnum.CLIENTE);
+        LoginRequest request = new LoginRequest();
+        request.setEmail("cliente@verzel.com");
+        request.setSenha("senha123");
+        AuthResponse response = new AuthResponse("token_jwt_valido", "Cliente Teste", RoleEnum.CLIENTE);
 
         when(authService.login(any(LoginRequest.class))).thenReturn(response);
 
@@ -73,8 +75,12 @@ class AuthControllerTest {
     @Test
     @DisplayName("Deve criar usuário Staff com sucesso e retornar status HTTP 201 Created")
     void deveCriarStaffComSucesso() throws Exception {
-        CreateStaffRequest request = new CreateStaffRequest("Portaria Demo", "portaria@verzel.com", "senha123", RoleEnum.PORTARIA);
-        AuthResponse response = new AuthResponse("token_jwt_valido", "Portaria Demo", "portaria@verzel.com", RoleEnum.PORTARIA);
+        CreateStaffRequest request = new CreateStaffRequest();
+        request.setNome("Portaria Demo");
+        request.setEmail("portaria@verzel.com");
+        request.setSenha("senha123");
+        request.setRole(RoleEnum.PORTARIA);
+        AuthResponse response = new AuthResponse("token_jwt_valido", "Portaria Demo", RoleEnum.PORTARIA);
 
         when(authService.criarStaff(any(CreateStaffRequest.class))).thenReturn(response);
 

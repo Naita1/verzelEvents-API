@@ -3,6 +3,7 @@ package verzelEvents.exception;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -14,6 +15,11 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Interceptador global de exceções.
+ * Padroniza as respostas de erro da API para o formato JSON esperado pelo Front-end.
+ */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -57,6 +63,14 @@ public class GlobalExceptionHandler {
         });
 
         ApiError apiError = new ApiError(status, "Erro de validação nos campos informados.", errors);
+        return new ResponseEntity<>(apiError, status);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleUnexpectedException(Exception ex) {
+        log.error("Erro interno inesperado: ", ex);
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ApiError apiError = new ApiError(status, "Ocorreu um erro interno inesperado no servidor.");
         return new ResponseEntity<>(apiError, status);
     }
 }
