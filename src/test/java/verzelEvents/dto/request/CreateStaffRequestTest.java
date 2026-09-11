@@ -31,7 +31,7 @@ class CreateStaffRequestTest {
         request.setNome("Operador Silva");
         request.setEmail("portaria@verzel.com");
         request.setSenha("senhaSegura123");
-        request.setRole(RoleEnum.ROLE_PORTARIA);
+        request.setRole(RoleEnum.PORTARIA);
 
         Set<ConstraintViolation<CreateStaffRequest>> violations = validator.validate(request);
 
@@ -45,7 +45,7 @@ class CreateStaffRequestTest {
         request.setNome("Operador Silva");
         request.setEmail("portaria@verzel.com");
         request.setSenha("12345");
-        request.setRole(RoleEnum.ROLE_PORTARIA);
+        request.setRole(RoleEnum.PORTARIA);
 
         Set<ConstraintViolation<CreateStaffRequest>> violations = validator.validate(request);
 
@@ -60,7 +60,7 @@ class CreateStaffRequestTest {
         request.setNome("A");
         request.setEmail("email_invalido");
         request.setSenha("senhaSegura123");
-        request.setRole(RoleEnum.ROLE_ORGANIZADOR);
+        request.setRole(RoleEnum.ORGANIZADOR);
 
         Set<ConstraintViolation<CreateStaffRequest>> violations = validator.validate(request);
 

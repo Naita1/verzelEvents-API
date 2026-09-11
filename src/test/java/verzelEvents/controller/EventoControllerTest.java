@@ -55,7 +55,7 @@ class EventoControllerTest {
     @DisplayName("Deve listar eventos públicos com status HTTP 200 OK")
     void deveListarEventosPublicos() throws Exception {
         UUID eventoId = UUID.randomUUID();
-        EventoResponse response = new EventoResponse(eventoId, "Matrix", "CINEMA", LocalDateTime.now(), "Sala 1", 100, new BigDecimal("35.00"), "PUBLICADO");
+        EventoResponse response = new EventoResponse(eventoId, "Matrix", "CINEMA", LocalDateTime.now(), "Sala 1", 100, new BigDecimal("35.00"), "PUBLICADO", null);
 
         when(eventoService.listEvents()).thenReturn(List.of(response));
 
@@ -69,7 +69,7 @@ class EventoControllerTest {
     @DisplayName("Deve obter detalhes do evento com status HTTP 200 OK")
     void deveObterDetalhesDoEvento() throws Exception {
         UUID eventoId = UUID.randomUUID();
-        EventoResponse response = new EventoResponse(eventoId, "Matrix", "CINEMA", LocalDateTime.now(), "Sala 1", 100, new BigDecimal("35.00"), "PUBLICADO");
+        EventoResponse response = new EventoResponse(eventoId, "Matrix", "CINEMA", LocalDateTime.now(), "Sala 1", 100, new BigDecimal("35.00"), "PUBLICADO", null);
 
         when(eventoService.getEventDetails(eventoId)).thenReturn(response);
 
@@ -97,7 +97,7 @@ class EventoControllerTest {
     @Test
     @DisplayName("Deve buscar catálogo do TMDb com status HTTP 200 OK")
     void deveBuscarCatalogoTmdb() throws Exception {
-        CatalogItemResponse item = new CatalogItemResponse(603L, "The Matrix", "Sinopse...", "poster.jpg", "1999-03-31");
+        CatalogItemResponse item = new CatalogItemResponse("The Matrix", "Sinopse...", "poster.jpg", "1999-03-31");
 
         when(tmdbService.searchMovies("Matrix")).thenReturn(List.of(item));
 
@@ -111,8 +111,8 @@ class EventoControllerTest {
     @WithMockUser(username = "organizador@verzel.com", roles = "ORGANIZADOR")
     void deveCriarEventoComSucesso() throws Exception {
         UUID eventoId = UUID.randomUUID();
-        CreateEventRequest request = new CreateEventRequest("Matrix", "CINEMA", LocalDateTime.now().plusDays(5), "Sala 1", 50, new BigDecimal("40.00"), 603L);
-        EventoResponse response = new EventoResponse(eventoId, "Matrix", "CINEMA", LocalDateTime.now().plusDays(5), "Sala 1", 50, new BigDecimal("40.00"), "PUBLICADO");
+        CreateEventRequest request = new CreateEventRequest();
+        EventoResponse response = new EventoResponse(eventoId, "Matrix", "CINEMA", LocalDateTime.now().plusDays(5), "Sala 1", 50, new BigDecimal("40.00"), "PUBLICADO", null);
 
         when(eventoService.createEvent(any(CreateEventRequest.class), eq("organizador@verzel.com"))).thenReturn(response);
 

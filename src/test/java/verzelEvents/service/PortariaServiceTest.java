@@ -67,7 +67,7 @@ class PortariaServiceTest {
 
         ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
 
-        assertEquals("VALIDO", response.getResultado());
+        assertEquals("VALIDO", response.resultado());
         assertEquals(IngressoStatus.VALIDADO, ingresso.getStatus());
         verify(validacaoRepository, times(1)).save(any(Validacao.class));
     }
@@ -87,7 +87,7 @@ class PortariaServiceTest {
 
         ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
 
-        assertEquals("JA_UTILIZADO", response.getResultado());
+        assertEquals("JA_UTILIZADO", response.resultado());
         verify(ingressoRepository, never()).save(ingresso);
     }
 
@@ -104,7 +104,7 @@ class PortariaServiceTest {
 
         ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
 
-        assertEquals("INVALIDO", response.getResultado());
+        assertEquals("INVALIDO", response.resultado());
         assertEquals(IngressoStatus.EMITIDO, ingresso.getStatus()); 
         verify(validacaoRepository, times(1)).save(any(Validacao.class));
     }
@@ -123,7 +123,7 @@ class PortariaServiceTest {
 
         ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
 
-        assertEquals("EVENTO_ERRADO", response.getResultado());
+        assertEquals("EVENTO_ERRADO", response.resultado());
         assertEquals(IngressoStatus.EMITIDO, ingresso.getStatus());
         verify(validacaoRepository, times(1)).save(any(Validacao.class));
     }
@@ -139,7 +139,7 @@ class PortariaServiceTest {
 
         ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
 
-        assertEquals("INVALIDO", response.getResultado());
+        assertEquals("INVALIDO", response.resultado());
         verify(ingressoRepository, never()).findByReservaId(any());
         verify(validacaoRepository, times(1)).save(any(Validacao.class));
     }
@@ -157,7 +157,7 @@ class PortariaServiceTest {
 
         ValidacaoResponse response = portariaService.validateTicket(request, "portaria@verzel.com");
 
-        assertEquals("INVALIDO", response.getResultado());
+        assertEquals("INVALIDO", response.resultado());
         verify(validacaoRepository, times(1)).save(any(Validacao.class));
     }
 }

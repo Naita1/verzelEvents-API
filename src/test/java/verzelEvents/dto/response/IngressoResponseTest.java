@@ -35,13 +35,15 @@ class IngressoResponseTest {
         UUID ingressoId = UUID.randomUUID();
         UUID reservaId = UUID.randomUUID();
 
+        IngressoStatus statusEnum = IngressoStatus.values()[0];
+
         Ingresso ingresso = mock(Ingresso.class);
         Reserva reserva = mock(Reserva.class);
         Assento assento = mock(Assento.class);
         Evento evento = mock(Evento.class);
 
         when(ingresso.getId()).thenReturn(ingressoId);
-        when(ingresso.getStatus()).thenReturn(IngressoStatus.VALIDO);
+        when(ingresso.getStatus()).thenReturn(statusEnum);
         when(ingresso.getQrHash()).thenReturn("hash_qr");
         when(ingresso.getShareToken()).thenReturn("share_token");
         when(ingresso.getReserva()).thenReturn(reserva);
@@ -55,7 +57,7 @@ class IngressoResponseTest {
 
         assertThat(response).isNotNull();
         assertThat(response.id()).isEqualTo(ingressoId);
-        assertThat(response.status()).isEqualTo("VALIDO");
+        assertThat(response.status()).isEqualTo(statusEnum.name());
         assertThat(response.assentoCodigo()).isEqualTo("B4");
         assertThat(response.eventoTitulo()).isEqualTo("Inception");
         assertThat(response.codigoValidacao()).isEqualTo(reservaId + ":hash_qr");

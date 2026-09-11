@@ -8,10 +8,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+
 import verzelEvents.dto.response.IngressoResponse;
 import verzelEvents.service.IngressoService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,12 +38,12 @@ class IngressoControllerTest {
         UUID ingressoId = UUID.randomUUID();
         IngressoResponse response = new IngressoResponse(
                 ingressoId,
+                "VALIDO",
+                "hash_qr_code_123",
+                "share_token_123",
                 "Matrix Resurrections",
                 "A1",
-                "cliente@verzel.com",
-                "http://qr.code/link",
-                "share_token_123",
-                LocalDateTime.now()
+                "reserva_123:hash_qr_code_123"
         );
 
         when(ingressoService.getMyTickets("cliente@verzel.com")).thenReturn(List.of(response));
@@ -62,12 +62,12 @@ class IngressoControllerTest {
         String token = "share_token_123";
         IngressoResponse response = new IngressoResponse(
                 ingressoId,
+                "VALIDO",
+                "hash_qr_code_123",
+                token,
                 "Matrix Resurrections",
                 "A1",
-                "cliente@verzel.com",
-                "http://qr.code/link",
-                token,
-                LocalDateTime.now()
+                "reserva_123:hash_qr_code_123"
         );
 
         when(ingressoService.getSharedTicket(eq(token))).thenReturn(response);

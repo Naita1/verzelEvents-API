@@ -14,7 +14,6 @@ import verzelEvents.dto.request.CreateReservaRequest;
 import verzelEvents.dto.response.ReservaResponse;
 import verzelEvents.service.ReservaService;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -46,14 +45,17 @@ class ReservaControllerTest {
         UUID assentoId = UUID.randomUUID();
         UUID reservaId = UUID.randomUUID();
 
-        CreateReservaRequest request = new CreateReservaRequest(eventoId, assentoId);
+        CreateReservaRequest request = new CreateReservaRequest();
+        request.setEventoId(eventoId);
+        request.setAssentoId(assentoId);
+        
         ReservaResponse response = new ReservaResponse(
                 reservaId,
+                "PENDENTE",
+                LocalDateTime.now().plusMinutes(5),
                 "Matrix Resurrections",
                 "A1",
-                new BigDecimal("35.00"),
-                LocalDateTime.now().plusMinutes(5),
-                "PENDENTE"
+                "cliente@verzel.com"
         );
 
         when(reservaService.createReserva(any(CreateReservaRequest.class), eq("cliente@verzel.com")))

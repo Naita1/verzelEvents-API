@@ -14,7 +14,6 @@ import verzelEvents.dto.request.PagamentoRequest;
 import verzelEvents.dto.response.IngressoResponse;
 import verzelEvents.service.PagamentoService;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,15 +42,18 @@ class PagamentoControllerTest {
     void deveProcessarPagamentoComSucesso() throws Exception {
         UUID reservaId = UUID.randomUUID();
         UUID ingressoId = UUID.randomUUID();
-        PagamentoRequest request = new PagamentoRequest("1234567890123456", "12/28", "123", "CARTAO_CREDITO");
+        
+        PagamentoRequest request = new PagamentoRequest();
+        request.setNumeroCartao("1234567890123456");
+        request.setNomeCartao("Cartao Teste");        
         IngressoResponse response = new IngressoResponse(
                 ingressoId,
+                "VALIDO",
+                "hash_qr_code_123",
+                "share_token_123",
                 "Matrix Resurrections",
                 "A1",
-                "cliente@verzel.com",
-                "http://qr.code/link",
-                "share_token_123",
-                LocalDateTime.now()
+                "reserva_123:hash_qr_code_123"
         );
 
         when(pagamentoService.processPayment(eq(reservaId), any(PagamentoRequest.class), eq("cliente@verzel.com")))

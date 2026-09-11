@@ -13,17 +13,19 @@ class IngressoTest {
     @DisplayName("Deve garantir a igualdade entre ingressos com base estritamente no ID")
     void deveTestarEqualsEHashCode() {
         UUID id = UUID.randomUUID();
+        IngressoStatus status1 = IngressoStatus.values()[0];
+        IngressoStatus status2 = IngressoStatus.values().length > 1 ? IngressoStatus.values()[1] : status1;
 
         Ingresso ingresso1 = Ingresso.builder()
                 .id(id)
                 .qrHash("hash123")
-                .status(IngressoStatus.VALIDO)
+                .status(status1)
                 .build();
 
         Ingresso ingresso2 = Ingresso.builder()
                 .id(id)
                 .qrHash("hash456")
-                .status(IngressoStatus.UTILIZADO)
+                .status(status2)
                 .build();
 
         Ingresso ingressoDiferente = Ingresso.builder()
@@ -41,19 +43,20 @@ class IngressoTest {
     void deveInstanciarIngressoComSucesso() {
         UUID id = UUID.randomUUID();
         Reserva reserva = Reserva.builder().id(UUID.randomUUID()).build();
+        IngressoStatus status = IngressoStatus.values()[0];
 
         Ingresso ingresso = Ingresso.builder()
                 .id(id)
                 .reserva(reserva)
                 .qrHash("hash_hmac_123")
-                .status(IngressoStatus.VALIDO)
+                .status(status)
                 .shareToken("share_token_xyz")
                 .build();
 
         assertThat(ingresso.getId()).isEqualTo(id);
         assertThat(ingresso.getReserva()).isEqualTo(reserva);
         assertThat(ingresso.getQrHash()).isEqualTo("hash_hmac_123");
-        assertThat(ingresso.getStatus()).isEqualTo(IngressoStatus.VALIDO);
+        assertThat(ingresso.getStatus()).isEqualTo(status);
         assertThat(ingresso.getShareToken()).isEqualTo("share_token_xyz");
     }
 }

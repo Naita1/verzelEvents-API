@@ -14,22 +14,24 @@ class ReservaTest {
     @DisplayName("Deve garantir a igualdade entre reservas com base estritamente no ID")
     void deveTestarEqualsEHashCode() {
         UUID id = UUID.randomUUID();
+        ReservaStatus status1 = ReservaStatus.PENDENTE;
+        ReservaStatus status2 = ReservaStatus.values().length > 1 ? ReservaStatus.values()[1] : status1;
 
         Reserva reserva1 = Reserva.builder()
                 .id(id)
-                .status(ReservaStatus.PENDENTE)
+                .status(status1)
                 .idempotencyKey("key-123")
                 .build();
 
         Reserva reserva2 = Reserva.builder()
                 .id(id)
-                .status(ReservaStatus.PAGA)
+                .status(status2)
                 .idempotencyKey("key-456")
                 .build();
 
         Reserva reservaDiferente = Reserva.builder()
                 .id(UUID.randomUUID())
-                .status(ReservaStatus.PENDENTE)
+                .status(status1)
                 .build();
 
         assertThat(reserva1).isEqualTo(reserva2);
