@@ -6,16 +6,16 @@ import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ResourceNotFoundExceptionTest {
+class SeatAlreadyReservedExceptionTest {
 
     @Test
-    @DisplayName("Deve instanciar ResourceNotFoundException com status HTTP 404 NOT_FOUND")
-    void deveInstanciarExcecaoComStatusNotFound() {
-        String mensagem = "Evento não encontrado com o ID informado";
+    @DisplayName("Deve instanciar SeatAlreadyReservedException com status HTTP 409 CONFLICT")
+    void deveInstanciarExcecaoComStatusConflict() {
+        String mensagem = "Assento já reservado";
 
-        ResourceNotFoundException exception = new ResourceNotFoundException(mensagem);
+        SeatAlreadyReservedException exception = new SeatAlreadyReservedException(mensagem);
 
         assertThat(exception.getMessage()).isEqualTo(mensagem);
-        assertThat(exception.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT);
     }
 }
