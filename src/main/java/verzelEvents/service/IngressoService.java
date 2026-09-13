@@ -23,7 +23,7 @@ public class IngressoService {
         Usuario cliente = usuarioRepository.findByEmail(clienteEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
 
-        return ingressoRepository.findByReserva_Cliente_Id(cliente.getId()).stream()
+        return ingressoRepository.findAllByClienteIdWithDetails(cliente.getId()).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
