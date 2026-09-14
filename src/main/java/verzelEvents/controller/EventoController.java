@@ -41,8 +41,7 @@ public class EventoController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista de eventos recuperada com sucesso",
-                    content = @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = EventoResponse.class))))
+                    content = @Content(mediaType = "application/json"))
     })
     @GetMapping("/eventos")
     public ResponseEntity<List<EventoResponse>> listEvents() {
@@ -70,8 +69,7 @@ public class EventoController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista de assentos recuperada com sucesso",
-                    content = @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = AssentoResponse.class)))),
+                    content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "Evento não encontrado", content = @Content)
     })
     @GetMapping("/eventos/{id}/assentos")
@@ -126,14 +124,14 @@ public class EventoController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista de eventos do organizador recuperada com sucesso",
-                    content = @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = EventoResponse.class)))),
+                    content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "401", description = "Não autenticado. Token JWT ausente ou inválido.", content = @Content),
             @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas organizadores podem listar seus eventos.", content = @Content)
     })
     @GetMapping("/organizador/eventos")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<List<EventoResponse>> listMyEvents(Authentication authentication) {
+    public ResponseEntity<List<EventoResponse>> listMyEvents(
+            Authentication authentication) {
         return ResponseEntity.ok(eventoService.listMyEvents(authentication.getName()));
     }
 }

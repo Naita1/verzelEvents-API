@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import verzelEvents.entity.Evento;
 import verzelEvents.exception.ResourceNotFoundException;
 import verzelEvents.repository.AssentoRepository;
 import verzelEvents.repository.EventoRepository;
