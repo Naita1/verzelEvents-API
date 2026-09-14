@@ -3,10 +3,11 @@ package verzelEvents.exception;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ProblemDetail;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
@@ -23,10 +24,21 @@ class GlobalExceptionHandlerTest {
     void deveTratarBusinessException() {
         BusinessException ex = new ForbiddenOperationException("Acesso negado");
 
-        ResponseEntity<?> response = handler.handleBusinessException(ex);
+        ProblemDetail response = handler.handleBusinessException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(response.getDetail()).isEqualTo("Acesso negado");
+    }
+
+    @Test
+    @DisplayName("Deve capturar EntityNotFoundException e retornar status HTTP 404")
+    void deveTratarEntityNotFoundException() {
+        EntityNotFoundException ex = new EntityNotFoundException("Recurso não encontrado");
+
+        ProblemDetail response = handler.handleEntityNotFoundException(ex);
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.getDetail()).isEqualTo("Recurso não encontrado");
     }
 
     @Test
@@ -39,10 +51,11 @@ class GlobalExceptionHandlerTest {
         when(ex.getBindingResult()).thenReturn(bindingResult);
         when(bindingResult.getAllErrors()).thenReturn(List.of(fieldError));
 
-        ResponseEntity<?> response = handler.handleValidationExceptions(ex);
+        ProblemDetail response = handler.handleValidationExceptions(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.getTitle()).isEqualTo("Dados inválidos");
+        assertThat(response.getProperties()).containsKey("invalidParams");
     }
 
     @Test
@@ -50,9 +63,9 @@ class GlobalExceptionHandlerTest {
     void deveTratarExceptionGenerica() {
         Exception ex = new RuntimeException("Erro inesperado no banco de dados");
 
-        ResponseEntity<?> response = handler.handleUnexpectedException(ex);
+        ProblemDetail response = handler.handleUnexpectedException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        assertThat(response.getDetail()).isEqualTo("Ocorreu um erro interno inesperado no servidor.");
     }
 }
