@@ -88,6 +88,18 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>junit-jupiter</artifactId>
+				<version>1.19.8</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>1.19.8</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
 				<groupId>net.javacrumbs.shedlock</groupId>
 				<artifactId>shedlock-spring</artifactId>
 				<version>5.13.0</version>
