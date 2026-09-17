@@ -8,7 +8,7 @@ Desafio técnico Elite Dev. Plataforma onde um organizador publica eventos a par
 
 ## Stack
 
-- **Back-end**: Java 21, Spring Boot 4.1.0, Maven
+- **Back-end**: Java 21, Spring Boot 3.2.5, Maven
 - **Front-end**: React (JavaScript) + Vite, Tailwind CSS (via `@theme`, sem `tailwind.config.js`), React Router, Context API para autenticação, Framer Motion para animações
 - **Banco de dados**: PostgreSQL 16 (via Docker Compose)
 - **Autenticação**: JWT (jjwt), três papéis (Cliente, Organizador, Portaria)
