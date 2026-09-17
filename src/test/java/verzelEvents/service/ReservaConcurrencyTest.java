@@ -47,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers
 class ReservaConcurrencyTest {
 
+    @SuppressWarnings("resource")
     @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("verzel_events_test")

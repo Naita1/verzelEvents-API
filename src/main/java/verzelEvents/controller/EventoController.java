@@ -21,6 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,8 +47,8 @@ public class EventoController {
                     content = @Content(mediaType = "application/json"))
     })
     @GetMapping("/eventos")
-    public ResponseEntity<List<EventoResponse>> listEvents() {
-        return ResponseEntity.ok(eventoService.listEvents());
+    public ResponseEntity<Page<EventoResponse>> listEvents(@PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(eventoService.listEvents(pageable));
     }
 
     @Operation(
@@ -130,8 +133,9 @@ public class EventoController {
     })
     @GetMapping("/organizador/eventos")
     @PreAuthorize("hasRole('ORGANIZADOR')")
-    public ResponseEntity<List<EventoResponse>> listMyEvents(
-            Authentication authentication) {
-        return ResponseEntity.ok(eventoService.listMyEvents(authentication.getName()));
+    public ResponseEntity<Page<EventoResponse>> listMyEvents(
+            Authentication authentication,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(eventoService.listMyEvents(authentication.getName(), pageable));
     }
 }

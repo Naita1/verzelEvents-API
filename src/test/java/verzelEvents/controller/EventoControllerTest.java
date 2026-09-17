@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import verzelEvents.dto.request.CreateEventRequest;
@@ -57,7 +58,7 @@ class EventoControllerTest {
         UUID eventoId = UUID.randomUUID();
         EventoResponse response = new EventoResponse(eventoId, "Matrix", "CINEMA", LocalDateTime.now(), "Sala 1", 100, new BigDecimal("35.00"), "PUBLICADO", null);
 
-        when(eventoService.listEvents()).thenReturn(List.of(response));
+        when(eventoService.listEvents(any())).thenReturn(new PageImpl<>(List.of(response)));
 
         mockMvc.perform(get("/eventos"))
                 .andExpect(status().isOk())

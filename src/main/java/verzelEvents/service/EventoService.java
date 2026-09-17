@@ -10,10 +10,9 @@ import verzelEvents.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,10 +52,8 @@ public class EventoService {
         return toResponse(evento);
     }
 
-    public List<EventoResponse> listEvents() {
-        return eventoRepository.findAll().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<EventoResponse> listEvents(Pageable pageable) {
+        return eventoRepository.findAll(pageable).map(this::toResponse);
     }
 
     public EventoResponse getEventDetails(UUID id) {
@@ -65,12 +62,11 @@ public class EventoService {
         return toResponse(evento);
     }
 
-    public List<EventoResponse> listMyEvents(String organizadorEmail) {
+    public Page<EventoResponse> listMyEvents(String organizadorEmail, Pageable pageable) {
         Usuario organizador = usuarioRepository.findByEmail(organizadorEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Organizador não encontrado"));
-        return eventoRepository.findByOrganizadorId(organizador.getId()).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return eventoRepository.findByOrganizadorId(organizador.getId(), pageable)
+                .map(this::toResponse);
     }
 
     private EventoResponse toResponse(Evento evento) {
