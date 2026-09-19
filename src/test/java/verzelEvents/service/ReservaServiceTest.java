@@ -6,22 +6,25 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import verzelEvents.entity.Assento;
-import verzelEvents.entity.Reserva;
-import verzelEvents.entity.Usuario;
 import verzelEvents.dto.request.CreateReservaRequest;
-import verzelEvents.exception.InvalidOperationException;
+import verzelEvents.dto.response.ReservaResponse;
+import verzelEvents.entity.*;
 import verzelEvents.exception.ResourceNotFoundException;
+import verzelEvents.exception.SeatAlreadyReservedException;
 import verzelEvents.repository.AssentoRepository;
+import verzelEvents.repository.EventoRepository;
 import verzelEvents.repository.ReservaRepository;
 import verzelEvents.repository.UsuarioRepository;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,87 +37,136 @@ class ReservaServiceTest {
     private AssentoRepository assentoRepository;
 
     @Mock
+    private EventoRepository eventoRepository;
+
+    @Mock
     private UsuarioRepository usuarioRepository;
 
     @InjectMocks
     private ReservaService reservaService;
 
     @Test
-    @DisplayName("Deve criar uma nova reserva com sucesso quando o assento estiver LIVRE")
+    @DisplayName("Deve criar uma reserva com sucesso quando o assento estiver LIVRE")
     void deveCriarReservaComSucesso() {
-        // Arrange
+        UUID eventoId = UUID.randomUUID();
         UUID assentoId = UUID.randomUUID();
         String usuarioEmail = "cliente@verzel.com";
-        String chaveIdempotencia = UUID.randomUUID().toString();
+        String chaveIdempotencia = "key-123";
 
-        CreateReservaRequest request = mock(CreateReservaRequest.class);
-        lenient().when(request.getAssentoId()).thenReturn(assentoId);
+        CreateReservaRequest request = new CreateReservaRequest();
+        request.setEventoId(eventoId);
+        request.setAssentoId(assentoId);
+        request.setIdempotencyKey(chaveIdempotencia);
 
-        Assento assentoMock = mock(Assento.class);
-        Usuario usuarioMock = mock(Usuario.class);
-        Reserva reservaMock = mock(Reserva.class);
+        Usuario cliente = Usuario.builder()
+                .nome("Cliente Teste")
+                .email(usuarioEmail)
+                .build();
+
+        Evento evento = Evento.builder()
+                .id(eventoId)
+                .titulo("Show do Verão")
+                .tipo("MUSICA")
+                .local("São Paulo")
+                .capacidade(100)
+                .preco(new BigDecimal("120.00"))
+                .dataHora(LocalDateTime.now().plusDays(1))
+                .build();
+
+        Assento assento = Assento.builder()
+                .id(assentoId)
+                .codigo("A1")
+                .status(AssentoStatus.LIVRE)
+                .evento(evento)
+                .build();
 
         when(reservaRepository.findByIdempotencyKey(chaveIdempotencia)).thenReturn(Optional.empty());
-        when(usuarioRepository.findByEmail(usuarioEmail)).thenReturn(Optional.of(usuarioMock));
-        when(assentoRepository.findById(assentoId)).thenReturn(Optional.of(assentoMock));
-        
-        when(reservaRepository.save(any(Reserva.class))).thenReturn(reservaMock);
+        when(usuarioRepository.findByEmail(usuarioEmail)).thenReturn(Optional.of(cliente));
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(evento));
+        when(assentoRepository.findById(assentoId)).thenReturn(Optional.of(assento));
+        when(assentoRepository.saveAndFlush(assento)).thenReturn(assento);
+        when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        Object resultado = reservaService.createReserva(request, usuarioEmail);
+        ReservaResponse response = reservaService.createReserva(request, usuarioEmail);
 
-        // Assert
-        assertThat(resultado).isNotNull();
-        verify(reservaRepository, times(1)).save(any(Reserva.class));
-        verify(assentoRepository, times(1)).save(any(Assento.class));
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo("PENDENTE");
+        assertThat(response.eventoTitulo()).isEqualTo("Show do Verão");
+        assertThat(response.assentoCodigo()).isEqualTo("A1");
+        assertThat(response.cliente()).isEqualTo("Cliente Teste");
+        assertThat(assento.getStatus()).isEqualTo(AssentoStatus.RESERVADO);
+
+        verify(reservaRepository).findByIdempotencyKey(chaveIdempotencia);
+        verify(usuarioRepository).findByEmail(usuarioEmail);
+        verify(eventoRepository).findById(eventoId);
+        verify(assentoRepository).findById(assentoId);
+        verify(assentoRepository).saveAndFlush(assento);
+        verify(reservaRepository).save(any(Reserva.class));
     }
 
     @Test
-    @DisplayName("Deve retornar a reserva existente se a chave de idempotência já constar no banco")
+    @DisplayName("Deve retornar a reserva existente quando a chave de idempotência já existir")
     void deveRetornarReservaExistenteQuandoChaveIdempotenciaFornecida() {
-        // Arrange
         UUID assentoId = UUID.randomUUID();
         String usuarioEmail = "cliente@verzel.com";
-        String chaveIdempotencia = "chave-reenvio-123";
+        String chaveIdempotencia = "reenvio-123";
 
-        CreateReservaRequest request = mock(CreateReservaRequest.class);
-        lenient().when(request.getAssentoId()).thenReturn(assentoId);
+        CreateReservaRequest request = new CreateReservaRequest();
+        request.setEventoId(UUID.randomUUID());
+        request.setAssentoId(assentoId);
+        request.setIdempotencyKey(chaveIdempotencia);
 
-        Reserva reservaExistenteMock = mock(Reserva.class);
+        Reserva reservaExistente = Reserva.builder()
+                .id(UUID.randomUUID())
+                .evento(Evento.builder().titulo("Evento Reenviado").build())
+                .cliente(Usuario.builder().nome("Cliente Teste").build())
+                .assento(Assento.builder().codigo("B3").build())
+                .status(ReservaStatus.PENDENTE)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .idempotencyKey(chaveIdempotencia)
+                .build();
 
-        when(reservaRepository.findByIdempotencyKey(chaveIdempotencia)).thenReturn(Optional.of(reservaExistenteMock));
+        when(reservaRepository.findByIdempotencyKey(chaveIdempotencia)).thenReturn(Optional.of(reservaExistente));
 
-        // Act
-        Object resultado = reservaService.createReserva(request, usuarioEmail);
+        ReservaResponse response = reservaService.createReserva(request, usuarioEmail);
 
-        // Assert
-        assertThat(resultado).isNotNull();
-        verify(usuarioRepository, never()).findByEmail(any());
+        assertThat(response).isNotNull();
+        assertThat(response.status()).isEqualTo("PENDENTE");
+        assertThat(response.eventoTitulo()).isEqualTo("Evento Reenviado");
+
+        verify(usuarioRepository, never()).findByEmail(anyString());
+        verify(eventoRepository, never()).findById(any());
         verify(assentoRepository, never()).findById(any());
         verify(reservaRepository, never()).save(any(Reserva.class));
     }
 
     @Test
-    @DisplayName("Deve lançar InvalidOperationException quando o assento já estiver RESERVADO ou VENDIDO")
+    @DisplayName("Deve lançar SeatAlreadyReservedException quando o assento já estiver RESERVADO ou VENDIDO")
     void deveLancarExcecaoQuandoAssentoNaoEstiverLivre() {
-        // Arrange
+        UUID eventoId = UUID.randomUUID();
         UUID assentoId = UUID.randomUUID();
         String usuarioEmail = "cliente@verzel.com";
 
-        CreateReservaRequest request = mock(CreateReservaRequest.class);
-        lenient().when(request.getAssentoId()).thenReturn(assentoId);
+        CreateReservaRequest request = new CreateReservaRequest();
+        request.setEventoId(eventoId);
+        request.setAssentoId(assentoId);
+        request.setIdempotencyKey("key-ocupado");
 
-        Usuario usuarioMock = mock(Usuario.class);
-        Assento assentoMock = mock(Assento.class);
+        Usuario cliente = Usuario.builder().nome("Cliente Teste").email(usuarioEmail).build();
+        Evento evento = Evento.builder().id(eventoId).titulo("Show do Verão").build();
+        Assento assento = Assento.builder()
+                .id(assentoId)
+                .codigo("C2")
+                .status(AssentoStatus.RESERVADO)
+                .evento(evento)
+                .build();
 
-        lenient().when(reservaRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
-        when(usuarioRepository.findByEmail(usuarioEmail)).thenReturn(Optional.of(usuarioMock));
-        when(assentoRepository.findById(assentoId)).thenReturn(Optional.of(assentoMock));
+        when(reservaRepository.findByIdempotencyKey("key-ocupado")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail(usuarioEmail)).thenReturn(Optional.of(cliente));
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(evento));
+        when(assentoRepository.findById(assentoId)).thenReturn(Optional.of(assento));
 
-        // Act & Assert
-        assertThrows(InvalidOperationException.class, () -> 
-            reservaService.createReserva(request, usuarioEmail)
-        );
+        assertThrows(SeatAlreadyReservedException.class, () -> reservaService.createReserva(request, usuarioEmail));
 
         verify(reservaRepository, never()).save(any(Reserva.class));
     }
@@ -122,24 +174,50 @@ class ReservaServiceTest {
     @Test
     @DisplayName("Deve lançar ResourceNotFoundException quando o assento não for encontrado")
     void deveLancarExcecaoQuandoAssentoNaoEncontrado() {
-        // Arrange
+        UUID eventoId = UUID.randomUUID();
         UUID assentoId = UUID.randomUUID();
         String usuarioEmail = "cliente@verzel.com";
 
-        CreateReservaRequest request = mock(CreateReservaRequest.class);
-        lenient().when(request.getAssentoId()).thenReturn(assentoId);
+        CreateReservaRequest request = new CreateReservaRequest();
+        request.setEventoId(eventoId);
+        request.setAssentoId(assentoId);
+        request.setIdempotencyKey("key-assento-inexistente");
 
-        Usuario usuarioMock = mock(Usuario.class);
+        Usuario cliente = Usuario.builder().nome("Cliente Teste").email(usuarioEmail).build();
+        Evento evento = Evento.builder().id(eventoId).titulo("Show do Verão").build();
 
-        lenient().when(reservaRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
-        when(usuarioRepository.findByEmail(usuarioEmail)).thenReturn(Optional.of(usuarioMock));
+        when(reservaRepository.findByIdempotencyKey("key-assento-inexistente")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail(usuarioEmail)).thenReturn(Optional.of(cliente));
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(evento));
         when(assentoRepository.findById(assentoId)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> 
-            reservaService.createReserva(request, usuarioEmail)
-        );
+        assertThrows(ResourceNotFoundException.class, () -> reservaService.createReserva(request, usuarioEmail));
 
+        verify(reservaRepository, never()).save(any(Reserva.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar ResourceNotFoundException quando o cliente não for encontrado")
+    void deveLancarExcecaoQuandoClienteNaoEncontrado() {
+        UUID eventoId = UUID.randomUUID();
+        UUID assentoId = UUID.randomUUID();
+        String usuarioEmail = "cliente@verzel.com";
+
+        CreateReservaRequest request = new CreateReservaRequest();
+        request.setEventoId(eventoId);
+        request.setAssentoId(assentoId);
+        request.setIdempotencyKey("key-cliente");
+
+        Evento evento = Evento.builder().id(eventoId).titulo("Show do Verão").build();
+        Assento assento = Assento.builder().id(assentoId).codigo("D1").status(AssentoStatus.LIVRE).evento(evento).build();
+
+        when(reservaRepository.findByIdempotencyKey("key-cliente")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail(usuarioEmail)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> reservaService.createReserva(request, usuarioEmail));
+
+        verify(eventoRepository, never()).findById(any());
+        verify(assentoRepository, never()).findById(any());
         verify(reservaRepository, never()).save(any(Reserva.class));
     }
 }
