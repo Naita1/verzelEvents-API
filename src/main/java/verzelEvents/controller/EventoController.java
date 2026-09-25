@@ -16,7 +16,9 @@ import verzelEvents.service.AssentoService;
 import verzelEvents.service.EventoService;
 import verzelEvents.service.TmdbService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,10 +28,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
+@Slf4j
 @RequiredArgsConstructor
 @Tag(name = "Eventos", description = "Endpoints para visualização e gerenciamento de eventos")
 public class EventoController {
@@ -39,16 +43,33 @@ public class EventoController {
     private final AssentoService assentoService;
 
     @Operation(
+            summary = "Health check simples da API",
+            description = "Endpoint leve para manter a instância acordada (Keep-Alive via cron/UptimeRobot)."
+    )
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("OK");
+    }
+
+    @Operation(
             summary = "Listar todos os eventos publicados",
             description = "Retorna uma lista de todos os eventos que estão com o status 'PUBLICADO'. Este endpoint é público."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista de eventos recuperada com sucesso",
-                    content = @Content(mediaType = "application/json"))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = EventoResponse.class)))
     })
     @GetMapping("/eventos")
     public ResponseEntity<Page<EventoResponse>> listEvents(@PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(eventoService.listEvents(pageable));
+        long inicio = System.currentTimeMillis();
+        Page<EventoResponse> response = eventoService.listEvents(pageable);
+        long total = System.currentTimeMillis() - inicio;
+        log.info(">>> [PERFORMANCE] GET /eventos executado em {} ms", total);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .body(response);
     }
 
     @Operation(
